@@ -4,19 +4,33 @@ class NotEmpty(Exception):
     pass
 class IllegalMove(Exception):
     pass
+class Ko(Exception):
+    pass
+        
 
-def members(x,y,color,track=None):
-    if track is None:
-        track = set()
-    #TODO
-def hasliberty(x,y,color):
-    if self.d.get((x,y),None)==None:
-        return False
-    for m in members(x,y,color):
-        for n in neighbourgs(x,y):
-            if x,y not in d:
-                return True
 class Go:
+    def neighbourgs(self,x,y):
+        #todo
+        return []
+    def members(self,x,y,color,track=None):
+        if track is None:
+            track = set()
+        #TODO keep track
+        return track
+    
+    def remove(self,x,y):
+        m=self.members(x,y,self.d[x,y])
+        #TODO real remove
+        return m
+
+    def has_liberty(self,x,y,color):
+        if self.d.get((x,y),None)==None:
+            return False
+        for m in self.members(x,y,color):
+            for n in self.neighbourgs(x,y):
+                if (x,y) not in self.d:
+                    return True
+        return False
     def __init__(self,size):
         self.size=size
         self.d = {}
@@ -27,22 +41,42 @@ class Go:
             self.d[i,size] = "/"
         self.history=[copy(self.d)]    
     def play(self,x,y,color):
-        
-        if not x,y in d:
+        #print(self.history)
+        if (x,y) in self.d:
             raise NotEmpty()
         try:
             self.d[x,y]= color
             removed = []
-            for n in neighbourgs(x,y):
-                if not hasliberty(*n,opponent_color(color)):
-                    removed.extend(remove(*n))
-            if not hasliberty(x,y,color):
-                raise IllegalMove()
+            for n in self.neighbourgs(x,y):
+                if not self.has_liberty(*n,opponent_color(color)):
+                    removed.extend(remove(self.d,*n))
+            #TODO had this check
+            #if not self.has_liberty(x,y,color):
+            #    raise IllegalMove()
+            #print(len(self.history))
+            #print(self.d)
+            try:
+             #   print(self.history.index(self.d))
+                pass
+            except:
+                pass
             if self.d in self.history:
+                try:
+                    print(self.history.index(self.d))
+                    print(self.history)
+                    print(self.d)
+                    pass
+                except:
+                    pass
+            
                 raise Ko()
         except Exception:
             del self.d[x,y]
+            for m in removed:
+                self.d[x,y]=opponent_color(color)
             raise
+        self.history.append(copy(self.d))
+        return (x,y),removed
             
 def main():
     stdscr = curses.initscr()
@@ -61,7 +95,7 @@ def main():
 |     |
 |||||||"""
     )
-    go=Go()
+    go=Go(5)
     x,y=0,0
     lastmove=-1,-1
     win.refresh()
@@ -93,7 +127,8 @@ def play(go,win,color,lastmove,x,y):
     #print(lastmove)
     if not(1<=x<=5 and 1<=y<=5):
         return lastmove,color
-    (x,y),prisonners=go.play(x,y,color)
+    (x,y),prisonners=go.play(x-1,y-1,color)
+    x,y = x+1,y+1
     win.addch(x,y,color.upper())
     
     a,b=lastmove
